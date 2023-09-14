@@ -15,10 +15,10 @@ jobs:
             name: "x86_64-8.1.0-release-posix-seh-rt_v6-rev0",
             url: "https://github.com/dirkarnez/cpp-tools/raw/main/x86_64-8.1.0-release-posix-seh-rt_v6-rev0.7z"
           }
-        - {
-            name: "winlibs-x86_64-posix-seh-gcc-11.2.0-mingw-w64-9.0.0-r1",
-            url: "https://github.com/brechtsanders/winlibs_mingw/releases/download/11.2.0-12.0.1-9.0.0-r1/winlibs-x86_64-posix-seh-gcc-11.2.0-mingw-w64-9.0.0-r1.zip"
-          }
+        # - {
+        #     name: "winlibs-x86_64-posix-seh-gcc-11.2.0-mingw-w64-9.0.0-r1",
+        #     url: "https://github.com/brechtsanders/winlibs_mingw/releases/download/11.2.0-12.0.1-9.0.0-r1/winlibs-x86_64-posix-seh-gcc-11.2.0-mingw-w64-9.0.0-r1.zip"
+        #   }
 
     runs-on: windows-latest
     env:
@@ -42,7 +42,12 @@ jobs:
       - name: curl cmake-3.24.0-windows-x86_64.zip
         shell: cmd
         run: curl https://github.com/Kitware/CMake/releases/download/v3.24.0/cmake-3.24.0-windows-x86_64.zip -L --output cmake-3.24.0-windows-x86_64.zip && dir && 7z.exe x cmake-3.24.0-windows-x86_64.zip
-        
+
+      - shell: cmd
+        run: |
+          curl "https://github.com/dirkarnez/boost-prebuilt/releases/download/v1.72.0/boost-v1.72.0-mingw64-x86_64-posix-seh-rev0-8.1.0.zip" -L -O -J &&^
+          7z.exe x boost-v1.72.0-mingw64-x86_64-posix-seh-rev0-8.1.0.zip -o"boost-v1.72.0-mingw64-x86_64-posix-seh-rev0-8.1.0"
+          
       - name: set PATH, check mingw version, cmake generate, build and install
         shell: cmd
         run: |
@@ -56,6 +61,12 @@ jobs:
             cmake.exe -G"MinGW Makefiles" ^
             -DCMAKE_BUILD_TYPE=Release ^
             -DBUILD_SHARED_LIBS=OFF ^
+            -DBUILD_TESTS=OFF ^
+            -DBoost_COMPILER=mgw81 ^
+            -DBoost_NO_SYSTEM_PATHS=TRUE ^
+            -DBoost_USE_STATIC_LIBS=TRUE ^
+            -DBoost_USE_STATIC_RUNTIME=ON ^
+            -DBOOST_ROOT="%CD_LINUX%/boost-v1.72.0-mingw64-x86_64-posix-seh-rev0-8.1.0/lib/cmake/Boost-1.72.0" ^
             -DCMAKE_INSTALL_PREFIX="cmake-build/${{ env.cmakeInstallationPath }}" -B./cmake-build &&^
             cd cmake-build && cmake --build . && cmake --install . 
             
